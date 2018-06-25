@@ -1,0 +1,19 @@
+{
+  "name": "rss-notifier",
+  "version": "1.0.0",
+  "description": "Reads latest RSS posts and sends them to a Telegram chat using a bot token",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Federico Baier",
+  "license": "MIT",
+  "dependencies": {
+    "delay": "^3.0.0",
+    "node-telegram-bot-api": "^0.30.0",
+    "rss-parser": "^3.4.0"
+  },
+  "devDependencies": {
+    "eslint": "^4.19.1"
+  }
+}

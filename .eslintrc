@@ -1,0 +1,15 @@
+{
+  "parserOptions": {
+    "ecmaVersion": 8
+  },
+  "rules": {
+    "key-spacing": "off",
+    "comma-dangle": "off",
+    "object-curly-spacing": "off",
+    "max-len": "off",
+    "camelcase": "off",
+    "operator-linebreak": "off",
+    "spaced-comment": "off",
+    "space-before-function-paren": "off"
+  }
+}
