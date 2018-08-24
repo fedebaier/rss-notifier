@@ -31,24 +31,25 @@ const bot = new TelegramBot(token);
 const parser = new Parser();
 
 (async () => {
+  let latestDate = new Date();
+  latestDate.setSeconds(0, 0);
+
   const feed = await parser.parseURL(rssURL);
-
-  const now = new Date();
-  now.setSeconds(0, 0);
-
-  fs.writeFileSync(file, now.toISOString(), {
-    encoding: 'utf8'
-  });
-
   feed.items.reverse();
 
-  const newItems = feed.items.filter(item => new Date(item.pubDate) >= prevDate);
+  const newItems = feed.items.filter(item => new Date(item.pubDate) > prevDate);
 
   for (const item of newItems) {
+    latestDate = new Date(item.pubDate);
+
     await bot.sendMessage(chatId, `${item.title}\n\n${item.link}`);
 
     await delay(2000);
   }
+
+  fs.writeFileSync(file, latestDate.toISOString(), {
+    encoding: 'utf8'
+  });
 
   process.exit();
 })();
