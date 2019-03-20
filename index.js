@@ -31,8 +31,7 @@ const bot = new TelegramBot(token);
 const parser = new Parser();
 
 (async () => {
-  let latestDate = new Date();
-  latestDate.setSeconds(0, 0);
+  let latestDate;
 
   const feed = await parser.parseURL(rssURL);
   feed.items.reverse();
@@ -47,9 +46,14 @@ const parser = new Parser();
     await delay(2000);
   }
 
-  fs.writeFileSync(file, latestDate.toISOString(), {
-    encoding: 'utf8'
-  });
+  if (latestDate) {
+    fs.writeFileSync(file, latestDate.toISOString(), {
+      encoding: 'utf8'
+    });
+  }
 
   process.exit();
-})();
+})().catch(err => {
+  console.error('There was an error when trying to parse the RSS:', err);
+  process.exit(1);
+});
