@@ -9,11 +9,11 @@
   "author": "Federico Baier",
   "license": "MIT",
   "dependencies": {
-    "delay": "^4.1.0",
+    "delay": "^4.2.0",
     "node-telegram-bot-api": "^0.30.0",
-    "rss-parser": "^3.7.0"
+    "rss-parser": "^3.7.1"
   },
   "devDependencies": {
-    "eslint": "^5.15.3"
+    "eslint": "^5.16.0"
   }
 }
