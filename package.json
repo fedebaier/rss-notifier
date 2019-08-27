@@ -10,11 +10,11 @@
   "license": "MIT",
   "dependencies": {
     "delay": "^4.3.0",
-    "lodash": "^4.17.14",
+    "lodash": "^4.17.15",
     "node-telegram-bot-api": "^0.30.0",
     "rss-parser": "^3.7.2"
   },
   "devDependencies": {
-    "eslint": "^6.0.1"
+    "eslint": "^6.2.2"
   }
 }
