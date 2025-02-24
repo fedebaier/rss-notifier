@@ -64,3 +64,6 @@ dump
 
 # Doppler setup
 doppler.yaml
+
+# SQLite
+*.db

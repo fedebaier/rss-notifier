@@ -1,59 +1,81 @@
-'use strict';
+import 'dotenv/config';
 
-const TelegramBot = require('node-telegram-bot-api');
-const Parser = require('rss-parser');
-const delay = require('delay');
-const fs = require('fs');
-const path = require('path');
+import { Bot } from 'grammy';
+import Parser from 'rss-parser';
+import sqlite3 from 'sqlite3';
 
-const file = path.resolve(__dirname, 'last-date');
+import { execute, fetchFirst } from './sql.js';
 
-if (!fs.existsSync(file)) {
-  const tempDate = new Date();
-  tempDate.setMinutes(tempDate.getMinutes() - 60);
-  tempDate.setSeconds(0, 0);
-  fs.writeFileSync(file, tempDate.toISOString(), {
-    encoding: 'utf8'
-  });
+const { BOT_TOKEN, CHAT_ID } = process.env;
+
+if (!BOT_TOKEN || !CHAT_ID) {
+  throw new Error('Please configure environment variables!');
 }
 
-const prevDate = new Date(fs.readFileSync(file, { encoding: 'utf8' }));
-const token = process.argv[2];
-const chatId = process.argv[3];
-const rssURL = process.argv[4] || 'http://www.theverge.com/rss/index.xml';
+const bot = new Bot(BOT_TOKEN);
 
-if (!token || !chatId) {
-  console.log('Please provide a Telegram Bot Token and a Chat ID!');
-  process.exit(1);
-}
+const dbPath = './database.db';
+const db = new sqlite3.Database(dbPath);
 
-const bot = new TelegramBot(token);
-const parser = new Parser();
+try {
+  await execute(
+    db,
+    `CREATE TABLE IF NOT EXISTS lastrun (
+      id INTEGER PRIMARY KEY,
+      date TEXT NOT NULL);`
+  );
+  await execute(
+    db,
+    `CREATE TABLE IF NOT EXISTS urls (
+      id INTEGER PRIMARY KEY,
+      url TEXT NOT NULL);`
+  );
 
-(async () => {
+  let lastRun;
   let latestDate;
+
+  let data = await fetchFirst(db, `SELECT * FROM lastrun WHERE id = 1;`);
+  if (!data) {
+    lastRun = new Date();
+    lastRun.setMinutes(lastRun.getMinutes() - 60);
+    lastRun.setSeconds(0, 0);
+    await execute(db, `INSERT INTO lastrun (date) VALUES ('${lastRun.toISOString()}');`);
+  } else {
+    lastRun = new Date(data.date);
+  }
+
+  const rssURL = process.argv[2] || 'http://www.theverge.com/rss/index.xml';
+  const parser = new Parser();
 
   const feed = await parser.parseURL(rssURL);
   feed.items.reverse();
 
-  const newItems = feed.items.filter(item => new Date(item.pubDate) > prevDate);
+  const newItems = feed.items.filter((item) => new Date(item.pubDate) > lastRun);
 
   for (const item of newItems) {
     latestDate = new Date(item.pubDate);
 
-    await bot.sendMessage(chatId, `${item.title}\n\n${item.link}`);
+    data = await fetchFirst(db, `SELECT * FROM urls WHERE url = '${item.link}'`);
 
-    await delay(2000);
+    // Only send link if it's not already in the DB
+    if (!data) {
+      console.log(`Send: ${item.link}`);
+      await bot.api.sendMessage(CHAT_ID, `${item.title}\n\n${item.link}`);
+      await execute(db, `INSERT INTO urls (url) VALUES ('${item.link}');`);
+    } else {
+      console.log(`Skip: ${item.link}`);
+    }
+
+    await new Promise((resolve) => setTimeout(resolve, 2000));
   }
-
+  // Save the latest date if there are new items
   if (latestDate) {
-    fs.writeFileSync(file, latestDate.toISOString(), {
-      encoding: 'utf8'
-    });
+    await execute(db, `UPDATE lastrun SET date = '${latestDate.toISOString()}' WHERE id = 1;`);
   }
-
+  db.close();
   process.exit();
-})().catch(err => {
-  console.error('There was an error when trying to parse the RSS:', err);
+} catch (error) {
+  console.log(`Error when trying to parse the RSS: ${error}`);
+  db.close();
   process.exit(1);
-});
+}

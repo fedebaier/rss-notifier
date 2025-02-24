@@ -8,12 +8,13 @@ The first time it runs, it will send all the posts from the last hour. From then
 
 ## Usage
 
-Just execute the script providing the bot token, the chat ID and, optionally, the RSS feed URL. If no URL is provided, [The Verge](http://www.theverge.com/rss/index.xml) one will be used.
+First, create a `.env` file using the template (`.env.template`) providing the bot token and the chat ID.
+Then run the script and, optionally, provide the RSS feed URL. If no URL is provided, [The Verge](http://www.theverge.com/rss/index.xml) one will be used.
 
 Example:
 
 ```bash
-node index.js 999999999:ZZEUGMJdTnVErUEQyTPBtYz3UYfe7te_mno @AwesomeChat http://feeds.arstechnica.com/arstechnica/technology-lab
+node index.js http://feeds.arstechnica.com/arstechnica/technology-lab
 ```
 
 I recommend setting a cron job to run it periodically.
