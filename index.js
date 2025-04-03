@@ -59,7 +59,9 @@ try {
 
     // Only send link if it's not already in the DB
     if (!data) {
-      await bot.api.sendMessage(CHAT_ID, `${item.title}\n\n${item.link}`);
+      await bot.api.sendMessage(CHAT_ID, `${item.title}\n\n${item.link}`, {
+        parse_mode: 'HTML',
+      });
       await execute(db, `INSERT INTO urls (url) VALUES ('${item.link}');`);
     } else {
       console.log(`Skip: ${item.link}`);
